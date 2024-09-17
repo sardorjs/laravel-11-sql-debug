@@ -17,7 +17,8 @@ Route::get('/test-queries', function () {
     $simpleQuery = Author::all();
 
     // 2. Запрос с отношениями (может быть медленнее)
-    $eagerLoading = Author::with('books')->get();
+    $eagerLoading = Author::with('books')
+        ->dumpVisualExplain()->get();
 
     // 3. Сложный запрос с несколькими объединениями (может быть медленным)
     $complexJoin = DB::table('authors')

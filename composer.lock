@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7e8c3c14ff33b199b4a0838993eb8423",
+    "content-hash": "f6fd16bde782011a086a9a677bceeabf",
     "packages": [
         {
             "name": "brick/math",
@@ -5460,6 +5460,75 @@
                 "source": "https://github.com/tijsverkoyen/CssToInlineStyles/tree/v2.2.7"
             },
             "time": "2023-12-08T13:03:43+00:00"
+        },
+        {
+            "name": "tpetry/laravel-mysql-explain",
+            "version": "1.3.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/tpetry/laravel-mysql-explain.git",
+                "reference": "1a00db4ca8e42ef24775ae87e718ac257733497c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/tpetry/laravel-mysql-explain/zipball/1a00db4ca8e42ef24775ae87e718ac257733497c",
+                "reference": "1a00db4ca8e42ef24775ae87e718ac257733497c",
+                "shasum": ""
+            },
+            "require": {
+                "ext-pdo": "*",
+                "guzzlehttp/guzzle": "^6.0|^7.0",
+                "illuminate/contracts": "^6.0|^7.0|^8.0|^9.0|^10.0|^11.0",
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "mockery/mockery": "^1.6",
+                "nunomaduro/collision": "^3.1|^4.0|^5.0|^6.0|^7.0|^8.0",
+                "nunomaduro/larastan": "^1.0|^2.0",
+                "orchestra/testbench": "^4.0|^5.0|^6.0|^7.0|^8.0|^9.0",
+                "phpstan/extension-installer": "^1.1",
+                "phpstan/phpstan-deprecation-rules": "^1.0",
+                "phpstan/phpstan-phpunit": "^1.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Tpetry\\MysqlExplain\\MysqlExplainServiceProvider"
+                    ],
+                    "aliases": {
+                        "MysqlExplain": "Tpetry\\MysqlExplain\\Facades\\MysqlExplain"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Tpetry\\MysqlExplain\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Tobias Petry",
+                    "email": "github@tpetry.me",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Get Visual MySQL EXPLAIN for Laravel.",
+            "homepage": "https://github.com/tpetry/laravel-mysql-explain",
+            "keywords": [
+                "explain",
+                "laravel",
+                "mysql"
+            ],
+            "support": {
+                "issues": "https://github.com/tpetry/laravel-mysql-explain/issues",
+                "source": "https://github.com/tpetry/laravel-mysql-explain/tree/1.3.2"
+            },
+            "time": "2024-09-13T11:00:20+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
