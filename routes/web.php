@@ -14,36 +14,36 @@ Route::get('/', function () {
 
 Route::get('/test-queries', function () {
     // 1. Простой запрос (быстрый)
-    $simpleQuery = Author::all();
+    $simpleQuery = Author::toSql();
 
     // 2. Запрос с отношениями (может быть медленнее)
-    $eagerLoading = Author::with('books')->get();
+    $eagerLoading = Author::with('books')->toSql();
 
     // 3. Сложный запрос с несколькими объединениями (может быть медленным)
     $complexJoin = DB::table('authors')
         ->join('books', 'authors.id', '=', 'books.author_id')
         ->join('reviews', 'books.id', '=', 'reviews.book_id')
         ->select('authors.name', 'books.title', 'reviews.rating')
-        ->get();
+        ->toSql();
 
     // 4. Запрос с подзапросом (потенциально медленный)
     $subQuery = Author::whereHas('books', function ($query) {
         $query->where('pages', '>', 500);
-    })->get();
+    })->toSql();
 
     // 5. Запрос с агрегацией (может быть медленным на больших объемах данных)
     $aggregation = Book::groupBy('author_id')
         ->selectRaw('author_id, AVG(pages) as average_pages')
         ->having('average_pages', '>', 300)
-        ->get();
+        ->toSql();
 
     // 6. Запрос с сортировкой по связанной таблице (может быть очень медленным)
     $sortByRelation = Author::withCount('books')
         ->orderBy('books_count', 'desc')
-        ->get();
+        ->toSql();
 
     // 7. Запрос с использованием like (может быть медленным без индекса)
-    $likeQuery = Book::where('title', 'like', '%adventure%')->get();
+    $likeQuery = Book::where('title', 'like', '%adventure%')->toSql();
 
     // 8. Запрос с множественными условиями (может быть медленным)
     $multiCondition = Book::where('pages', '>', 200)
@@ -51,7 +51,7 @@ Route::get('/test-queries', function () {
         ->whereHas('reviews', function ($query) {
             $query->where('rating', '>', 4);
         })
-        ->get();
+        ->toSql();
 
     // 9. Запрос с использованием raw SQL (может быть быстрым или медленным, зависит от SQL)
     $rawSql = DB::select('SELECT * FROM books WHERE pages > ?', [500]);
@@ -59,30 +59,30 @@ Route::get('/test-queries', function () {
     // 10. Запрос с использованием union (может быть медленным)
     $union = Book::where('pages', '<', 100)
         ->union(Book::where('pages', '>', 500))
-        ->get();
+        ->toSql();
 
     // 11. Запрос с использованием whereIn с большим количеством значений (может быть медленным)
-    $largeWhereIn = Book::whereIn('id', range(1, 1000))->get();
+    $largeWhereIn = Book::whereIn('id', range(1, 1000))->toSql();
 
     // 12. Запрос с использованием distinct (может быть медленным на больших таблицах)
-    $distinct = Review::select('book_id')->distinct()->get();
+    $distinct = Review::select('book_id')->distinct()->toSql();
 
     // 13. Запрос с использованием having с group by (может быть медленным на больших объемах данных)
     $havingWithGroup = Book::select('author_id')
         ->groupBy('author_id')
         ->havingRaw('COUNT(*) > ?', [5])
-        ->get();
+        ->toSql();
 
 
     // 14. Запрос с использованием подзапроса в select (может быть медленным)
     $subQueryInSelect = Author::select('*', DB::raw('(SELECT AVG(rating) FROM reviews WHERE reviews.book_id IN (SELECT id FROM books WHERE books.author_id = authors.id)) as avg_rating'))
-        ->get();
+        ->toSql();
 
     // 15. Запрос с использованием функции в where (может быть медленным)
-    $functionInWhere = Book::whereRaw('LOWER(title) = ?', [strtolower('Some Title')])->get();
+    $functionInWhere = Book::whereRaw('LOWER(title) = ?', [strtolower('Some Title')])->toSql();
 
     // 16. Запрос с использованием full text search (может быть быстрым с правильным индексом, медленным без него)
-    $fullTextSearch = Book::whereRaw('MATCH(title, description) AGAINST(? IN BOOLEAN MODE)', ['adventure'])->get();
+    $fullTextSearch = Book::whereRaw('MATCH(title, description) AGAINST(? IN BOOLEAN MODE)', ['adventure'])->toSql();
 
     // 17. Запрос с использованием сложной агрегации (может быть очень медленным)
     $complexAggregation = DB::table('books')
@@ -91,14 +91,14 @@ Route::get('/test-queries', function () {
         ->groupBy('books.author_id')
         ->havingRaw('AVG(reviews.rating) > ?', [4])
         ->orderBy('avg_rating', 'desc')
-        ->get();
+        ->toSql();
 
     // 18. Запрос с использованием cross join (может быть очень медленным на больших таблицах)
     $crossJoin = DB::table('authors')
         ->crossJoin('books')
         ->select('authors.name', 'books.title')
         ->limit(100)
-        ->get();
+        ->toSql();
 
     // 19. Запрос с использованием оконных функций (может быть медленным)
     $windowFunction = DB::table('books')
@@ -106,7 +106,9 @@ Route::get('/test-queries', function () {
             DB::raw('AVG(pages) OVER (PARTITION BY author_id) as avg_pages_by_author')
         )
         ->orderBy('author_id')
-        ->get();
+        ->toSql();
+
+    dd($crossJoin,  $complexJoin, $fullTextSearch, $windowFunction, $eagerLoading);
 
     // 20. Запрос с использованием рекурсивного CTE (может быть медленным)
     $recursiveCTE = DB::select("
