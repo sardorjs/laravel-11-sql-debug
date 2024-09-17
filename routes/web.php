@@ -54,7 +54,7 @@ Route::get('/test-queries', function () {
         ->get();
 
     // 9. Запрос с использованием raw SQL (может быть быстрым или медленным, зависит от SQL)
-    $rawSql = DB::select(DB::raw('SELECT * FROM books WHERE pages > 500'));
+    $rawSql = DB::select('SELECT * FROM books WHERE pages > ?', [500]);
 
     // 10. Запрос с использованием union (может быть медленным)
     $union = Book::where('pages', '<', 100)
@@ -67,10 +67,12 @@ Route::get('/test-queries', function () {
     // 12. Запрос с использованием distinct (может быть медленным на больших таблицах)
     $distinct = Review::select('book_id')->distinct()->get();
 
-    // 13. Запрос с использованием having без group by (может быть медленным)
-    $havingWithoutGroup = Book::select('author_id')
-        ->having(DB::raw('COUNT(*)'), '>', 5)
+    // 13. Запрос с использованием having с group by (может быть медленным на больших объемах данных)
+    $havingWithGroup = Book::select('author_id')
+        ->groupBy('author_id')
+        ->havingRaw('COUNT(*) > ?', [5])
         ->get();
+
 
     // 14. Запрос с использованием подзапроса в select (может быть медленным)
     $subQueryInSelect = Author::select('*', DB::raw('(SELECT AVG(rating) FROM reviews WHERE reviews.book_id IN (SELECT id FROM books WHERE books.author_id = authors.id)) as avg_rating'))
@@ -108,18 +110,41 @@ Route::get('/test-queries', function () {
 
     // 20. Запрос с использованием рекурсивного CTE (может быть медленным)
     $recursiveCTE = DB::select("
-        WITH RECURSIVE category_path (id, name, path) AS
-        (
-          SELECT id, name, name as path
-          FROM categories
-          WHERE parent_id IS NULL
-          UNION ALL
-          SELECT c.id, c.name, CONCAT(cp.path, ' > ', c.name)
-          FROM category_path AS cp JOIN categories AS c
-            ON cp.id = c.parent_id
+        WITH RECURSIVE content_hierarchy AS (
+            -- Базовый случай: выбираем всех авторов
+            SELECT
+                a.id,
+                a.name AS content,
+                CAST(a.name AS CHAR(1000)) AS path,
+                0 AS level
+            FROM authors a
+
+            UNION ALL
+
+            -- Рекурсивная часть: добавляем книги и отзывы
+            SELECT
+                CASE
+                    WHEN r.id IS NOT NULL THEN r.id
+                    ELSE b.id
+                END,
+                CASE
+                    WHEN r.id IS NOT NULL THEN CONCAT('Review: ', LEFT(r.content, 50))
+                    ELSE b.title
+                END,
+                CONCAT(ch.path, ' > ',
+                    CASE
+                        WHEN r.id IS NOT NULL THEN CONCAT('Review: ', LEFT(r.content, 50))
+                        ELSE b.title
+                    END
+                ),
+                ch.level + 1
+            FROM content_hierarchy ch
+            LEFT JOIN books b ON ch.id = b.author_id AND ch.level = 0
+            LEFT JOIN reviews r ON b.id = r.book_id AND ch.level = 1
+            WHERE b.id IS NOT NULL OR r.id IS NOT NULL
         )
-        SELECT * FROM category_path
-        ORDER BY path;
+        SELECT * FROM content_hierarchy
+        ORDER BY path
     ");
 
     return "Queries executed successfully";
